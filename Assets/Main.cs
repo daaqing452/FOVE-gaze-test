@@ -5,14 +5,16 @@ using UnityEngine.UI;
 
 public class Main : MonoBehaviour {
 
+    // const
     static float PI = Mathf.Acos(-1);
+    static float D2R = 1.0f / 180 * PI;
+    static System.Random random = new System.Random();
 
+    // scene
     FoveInterface f;
     GameObject calibrationSphere, leftEyeSphere, rightEyeSphere;
 
     // debug
-    Vector2 memAngle = Vector2.zero;
-    Quaternion memRotation = Quaternion.identity;
     GameObject indicator;
     Text text1, text2, text3;
 
@@ -31,9 +33,14 @@ public class Main : MonoBehaviour {
         text1 = GameObject.Find("Text 1").GetComponent<Text>();
         text2 = GameObject.Find("Text 2").GetComponent<Text>();
         text3 = GameObject.Find("Text 3").GetComponent<Text>();
+        GameObject.Find("Text 1").SetActive(false);
+        GameObject.Find("Text 2").SetActive(false);
+        GameObject.Find("Text 3").SetActive(false);
         indicator = GameObject.Find("Indicator");
         recordingLight = GameObject.Find("Recording Light");
     }
+
+    int counter = 0;
 
     void Update() {
         // get gaze
@@ -55,11 +62,11 @@ public class Main : MonoBehaviour {
         if (Input.GetKeyDown(KeyCode.Space)) {
             calibrationSphere.SetActive(true);
         }
-
-        // memorize angles and rotation
+        
+        // debug
         if (Input.GetKeyDown(KeyCode.C)) {
-            memAngle = leftAngles;
-            memRotation = leftRotation;
+            SetBallLocation(indicator, (counter % 5 + 1) * 8, random.Next(360), 5);
+            counter += 1;
         }
 
         // record the data
@@ -81,19 +88,7 @@ public class Main : MonoBehaviour {
             Record(recorder, "head", headAngles, headRotation);
             lastRecordTime = now;
         }
-
-        // show memorized angles and rotation
-        if (Input.GetKeyDown(KeyCode.D)) {
-            float depth = 1.0f;
-            float theta = memAngle.x, phi = memAngle.y;
-            float x = Mathf.Cos(phi / 180 * PI) * Mathf.Tan(theta / 180 * PI) * depth;
-            float y = Mathf.Sin(phi / 180 * PI) * Mathf.Tan(theta / 180 * PI) * depth;
-            indicator.transform.localPosition = new Vector3(x, y, depth);
-            text1.text = theta.ToString();
-            text2.text = phi.ToString();
-            text3.text = Quaternion.Angle(memRotation, Quaternion.identity).ToString();
-            indicator.transform.SetParent(f.transform);
-        }
+        
 
         // render calibration point
         if (calibrationSphere.activeSelf) {
@@ -130,5 +125,11 @@ public class Main : MonoBehaviour {
         recorder.Write(angles.x + " " + angles.y + " ");
         recorder.Write(rotation.w + " " + rotation.x + " " + rotation.y + " " + rotation.z);
         recorder.WriteLine();
+    }
+
+    void SetBallLocation(GameObject g, float theta, float phi, float depth) {
+        float x = Mathf.Cos(phi * D2R) * Mathf.Tan(theta * D2R) * depth;
+        float y = Mathf.Sin(phi * D2R) * Mathf.Tan(theta * D2R) * depth;
+        g.transform.localPosition = new Vector3(x, y, depth);
     }
 }
