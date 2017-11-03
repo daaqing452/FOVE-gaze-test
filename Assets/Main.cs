@@ -6,8 +6,7 @@ using UnityEngine.UI;
 public class Main : MonoBehaviour {
 
     // const
-    static float PI = Mathf.Acos(-1);
-    static float D2R = 1.0f / 180 * PI;
+    static float D2R = 1.0f / 180 * Mathf.PI;
     static System.Random random = new System.Random();
 
     // scene

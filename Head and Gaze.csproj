@@ -229,6 +229,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Main.cs" />
+    <Compile Include="Assets\Ring2D.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\FoveUnityPlugin\Resources\EyeShader.shader" />
