@@ -6,6 +6,8 @@ using UnityEngine.UI;
 public class Main : MonoBehaviour {
 
     // const
+    const float MOVE_SPEED = 0.04f;
+    const float ROTATE_SPEED = 0.5f;
     static float D2R = 1.0f / 180 * Mathf.PI;
     static System.Random random = new System.Random();
 
@@ -29,13 +31,13 @@ public class Main : MonoBehaviour {
         calibrationSphere.SetActive(false);
         leftEyeSphere = GameObject.Find("Left Gaze Sphere");
         rightEyeSphere = GameObject.Find("Right Gaze Sphere");
-        text1 = GameObject.Find("Text 1").GetComponent<Text>();
+        /*text1 = GameObject.Find("Text 1").GetComponent<Text>();
         text2 = GameObject.Find("Text 2").GetComponent<Text>();
         text3 = GameObject.Find("Text 3").GetComponent<Text>();
         GameObject.Find("Text 1").SetActive(false);
         GameObject.Find("Text 2").SetActive(false);
         GameObject.Find("Text 3").SetActive(false);
-        indicator = GameObject.Find("Indicator");
+        indicator = GameObject.Find("Indicator");*/
         recordingLight = GameObject.Find("Recording Light");
     }
 
@@ -56,18 +58,32 @@ public class Main : MonoBehaviour {
         Quaternion leftRotation = Quaternion.FromToRotation(left.direction, f.transform.forward);
         Quaternion rightRotation = Quaternion.FromToRotation(right.direction, f.transform.forward);
         Quaternion headRotation = f.transform.rotation;
+        
+        // move
+        if (Input.GetKey(KeyCode.W)) {
+            MoveFoveCamera(f.transform.rotation * Vector3.forward);
+        }
+        if (Input.GetKey(KeyCode.S)) {
+            MoveFoveCamera(f.transform.rotation * -Vector3.forward);
+        }
+        if (Input.GetKey(KeyCode.A)) {
+            MoveFoveCamera(f.transform.rotation * -Vector3.right);
+        }
+        if (Input.GetKey(KeyCode.D)) {
+            MoveFoveCamera(f.transform.rotation * Vector3.right);
+        }
+        if (true) {
+            float rx = Input.GetAxis("Mouse X");
+            float ry = Input.GetAxis("Mouse Y");
+            f.transform.parent.transform.Rotate(f.transform.localRotation * Vector3.up, rx * ROTATE_SPEED, Space.World);
+            f.transform.parent.transform.Rotate(f.transform.localRotation * Vector3.left, ry * ROTATE_SPEED, Space.World);
+        }
 
         // enable calibration
         if (Input.GetKeyDown(KeyCode.Space)) {
             calibrationSphere.SetActive(true);
         }
         
-        // debug
-        if (Input.GetKeyDown(KeyCode.C)) {
-            SetBallLocation(indicator, (counter % 5 + 1) * 8, random.Next(360), 5);
-            counter += 1;
-        }
-
         // record the data
         if (Input.GetKeyDown(KeyCode.F)) {
             if (recording) {
@@ -88,7 +104,6 @@ public class Main : MonoBehaviour {
             lastRecordTime = now;
         }
         
-
         // render calibration point
         if (calibrationSphere.activeSelf) {
             /*RaycastHit hit;
@@ -130,5 +145,14 @@ public class Main : MonoBehaviour {
         float x = Mathf.Cos(phi * D2R) * Mathf.Tan(theta * D2R) * depth;
         float y = Mathf.Sin(phi * D2R) * Mathf.Tan(theta * D2R) * depth;
         g.transform.localPosition = new Vector3(x, y, depth);
+    }
+    
+    void MoveFoveCamera(Vector3 v) {
+        v = Vector3.ProjectOnPlane(v, Vector3.up) * MOVE_SPEED;
+        Vector3 u = f.transform.parent.transform.position;
+        Debug.Log(v.x + " " + v.y + " " + v.z);
+        Debug.Log(u.x + " " + u.y + " " + u.z);
+        //f.transform.parent.transform.position = u + v;
+        f.transform.parent.transform.Translate(v, Space.World);
     }
 }
